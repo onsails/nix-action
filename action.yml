@@ -1,0 +1,48 @@
+name: 'Setup Nix with Devenv'
+description: 'Install Determinate Nix, FlakeHub Cache, and Devenv with optional additional profiles'
+author: 'Your Name'
+
+inputs:
+  additionalProfiles:
+    description: 'Additional Nix profiles to install (space-separated, e.g., "nixpkgs#sccache nixpkgs#cachix")'
+    required: false
+    default: ''
+  nix-extra-conf:
+    description: 'Additional Nix configuration options'
+    required: false
+    default: |
+      lazy-trees = true
+      http-connections = 64
+      max-substitution-jobs = 64
+      fsync-metadata = false
+      show-trace = true
+      max-silent-time = 900
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install Nix
+      uses: DeterminateSystems/determinate-nix-action@v3
+      with:
+        extra-conf: ${{ inputs.nix-extra-conf }}
+
+    - name: Setup FlakeHub Cache
+      uses: DeterminateSystems/flakehub-cache-action@v2
+
+    - name: Install Devenv
+      shell: bash
+      run: |
+        nix profile add nixpkgs#devenv
+
+    - name: Install Additional Profiles
+      if: ${{ inputs.additionalProfiles != '' }}
+      shell: bash
+      run: |
+        for profile in ${{ inputs.additionalProfiles }}; do
+          echo "Installing profile: $profile"
+          nix profile add "$profile"
+        done
+
+branding:
+  icon: 'package'
+  color: 'blue'

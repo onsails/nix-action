@@ -26,6 +26,14 @@ A custom GitHub Action that installs [Determinate Nix](https://github.com/Determ
     additionalProfiles: 'nixpkgs#sccache nixpkgs#cachix'
 ```
 
+### With Unfree Packages
+
+```yaml
+- uses: onsails/nix-action@v1
+  with:
+    additionalUnfreeProfiles: 'nixpkgs#terraform nixpkgs#claude-code'
+```
+
 ### With Custom Nix Configuration
 
 ```yaml
@@ -46,6 +54,7 @@ A custom GitHub Action that installs [Determinate Nix](https://github.com/Determ
 | Input | Description | Required | Default |
 |-------|-------------|----------|---------|
 | `additionalProfiles` | Space-separated list of additional Nix profiles to install (e.g., `nixpkgs#sccache nixpkgs#cachix`) | No | `''` |
+| `additionalUnfreeProfiles` | Space-separated list of unfree Nix profiles to install (e.g., `nixpkgs#terraform nixpkgs#claude-code`) | No | `''` |
 | `nix-extra-conf` | Additional Nix configuration options | No | See default config below |
 
 ### Default Nix Configuration

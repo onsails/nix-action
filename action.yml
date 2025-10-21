@@ -7,6 +7,10 @@ inputs:
     description: 'Additional Nix profiles to install (space-separated, e.g., "nixpkgs#sccache nixpkgs#cachix")'
     required: false
     default: ''
+  additionalUnfreeProfiles:
+    description: 'Additional unfree Nix profiles to install (space-separated, e.g., "nixpkgs#terraform nixpkgs#claude-code")'
+    required: false
+    default: ''
   nix-extra-conf:
     description: 'Additional Nix configuration options'
     required: false
@@ -41,6 +45,15 @@ runs:
         for profile in ${{ inputs.additionalProfiles }}; do
           echo "Installing profile: $profile"
           nix profile add "$profile"
+        done
+
+    - name: Install Additional Unfree Profiles
+      if: ${{ inputs.additionalUnfreeProfiles != '' }}
+      shell: bash
+      run: |
+        for profile in ${{ inputs.additionalUnfreeProfiles }}; do
+          echo "Installing unfree profile: $profile"
+          NIXPKGS_ALLOW_UNFREE=1 nix profile add "$profile" --impure
         done
 
 branding:

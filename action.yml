@@ -28,6 +28,7 @@ runs:
     - name: Install Nix
       uses: DeterminateSystems/determinate-nix-action@v3
       with:
+        diagnostic-endpoint: ""
         extra-conf: ${{ inputs.nix-extra-conf }}
 
     - name: Setup FlakeHub Cache

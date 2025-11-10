@@ -16,13 +16,13 @@ A custom GitHub Action that installs [Determinate Nix](https://github.com/Determ
 ### Basic Usage
 
 ```yaml
-- uses: onsails/nix-action@v1
+- uses: onsails/nix-action@v2
 ```
 
 ### With Additional Profiles
 
 ```yaml
-- uses: onsails/nix-action@v1
+- uses: onsails/nix-action@v2
   with:
     additionalProfiles: 'nixpkgs#sccache nixpkgs#cachix'
 ```
@@ -30,7 +30,7 @@ A custom GitHub Action that installs [Determinate Nix](https://github.com/Determ
 ### With Unfree Packages
 
 ```yaml
-- uses: onsails/nix-action@v1
+- uses: onsails/nix-action@v2
   with:
     additionalUnfreeProfiles: 'nixpkgs#terraform nixpkgs#claude-code'
 ```
@@ -38,7 +38,7 @@ A custom GitHub Action that installs [Determinate Nix](https://github.com/Determ
 ### With Custom Nix Configuration
 
 ```yaml
-- uses: onsails/nix-action@v1
+- uses: onsails/nix-action@v2
   with:
     additionalProfiles: 'nixpkgs#sccache'
     nix-extra-conf: |
@@ -61,7 +61,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: onsails/nix-action@v1
+      - uses: onsails/nix-action@v2
         with:
           wb-snapshot: true
           additionalProfiles: 'nixpkgs#sccache'
@@ -89,9 +89,22 @@ The snapshot is created **after** all Nix profiles are installed but **before** 
 | `additionalUnfreeProfiles` | Space-separated list of unfree Nix profiles to install (e.g., `nixpkgs#terraform nixpkgs#claude-code`) | No | `''` |
 | `nix-extra-conf` | Additional Nix configuration options | No | See default config below |
 | `wb-snapshot` | Enable WarpBuild snapshot creation (opt-in, requires WarpBuild runner) | No | `'false'` |
+| `impatient-networking` | Enable aggressive timeout and retry settings for faster CI (opt-out, enabled by default) | No | `'true'` |
 
 ### Default Nix Configuration
 
+The action automatically applies these optimized settings for fast CI performance:
+
+**Impatient Networking** (enabled by default, opt-out with `impatient-networking: 'false'`):
+```
+connect-timeout = 5
+stalled-download-timeout = 10
+download-attempts = 3
+narinfo-cache-negative-ttl = 5
+fallback = false
+```
+
+**Additional Defaults** (can be overridden with `nix-extra-conf`):
 ```
 lazy-trees = true
 http-connections = 64
@@ -99,6 +112,14 @@ max-substitution-jobs = 64
 fsync-metadata = false
 show-trace = true
 max-silent-time = 900
+```
+
+The impatient networking configuration ensures CI jobs fail fast rather than waiting on slow or unavailable substituters, improving overall build reliability and speed. You can disable it if you need more patient retry behavior:
+
+```yaml
+- uses: onsails/nix-action@v2
+  with:
+    impatient-networking: 'false'
 ```
 
 ## Complete Example
@@ -119,7 +140,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup Nix and Devenv
-        uses: your-username/nix-action@v1
+        uses: onsails/nix-action@v2
         with:
           additionalProfiles: 'nixpkgs#sccache nixpkgs#cachix'
 

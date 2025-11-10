@@ -25,25 +25,40 @@ inputs:
     description: 'Enable WarpBuild snapshot creation (opt-in)'
     required: false
     default: 'false'
+  impatient-networking:
+    description: 'Enable aggressive timeout and retry settings for faster CI (opt-out, enabled by default)'
+    required: false
+    default: 'true'
 
 runs:
   using: 'composite'
   steps:
+    - name: Set Impatient Networking Config
+      if: ${{ inputs.impatient-networking == 'true' }}
+      id: impatient-config
+      shell: bash
+      run: |
+        cat << 'EOF' >> $GITHUB_OUTPUT
+        config<<IMPATIENT_EOF
+        # Networking: be impatient
+        connect-timeout = 5
+        stalled-download-timeout = 10
+        download-attempts = 3
+
+        # Avoid long negative-cache waits for narinfo lookups
+        narinfo-cache-negative-ttl = 5
+
+        # Don't waste time falling back to source if a substituter is down
+        fallback = false
+        IMPATIENT_EOF
+        EOF
+
     - name: Install Nix
       uses: DeterminateSystems/determinate-nix-action@v3
       with:
         diagnostic-endpoint: ""
         extra-conf: |
-          # Networking: be impatient
-          connect-timeout = 5
-          stalled-download-timeout = 10
-          download-attempts = 3
-
-          # Avoid long negative-cache waits for narinfo lookups
-          narinfo-cache-negative-ttl = 5
-
-          # Don’t waste time falling back to source if a substituter is down
-          fallback = false
+          ${{ steps.impatient-config.outputs.config }}
           ${{ inputs.nix-extra-conf }}
 
     - name: Install Devenv

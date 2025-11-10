@@ -33,7 +33,18 @@ runs:
       uses: DeterminateSystems/determinate-nix-action@v3
       with:
         diagnostic-endpoint: ""
-        extra-conf: ${{ inputs.nix-extra-conf }}
+        extra-conf: |
+          # Networking: be impatient
+          connect-timeout = 5
+          stalled-download-timeout = 10
+          download-attempts = 3
+
+          # Avoid long negative-cache waits for narinfo lookups
+          narinfo-cache-negative-ttl = 5
+
+          # Don’t waste time falling back to source if a substituter is down
+          fallback = false
+          ${{ inputs.nix-extra-conf }}
 
     - name: Install Devenv
       shell: bash

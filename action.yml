@@ -21,6 +21,10 @@ inputs:
       fsync-metadata = false
       show-trace = true
       max-silent-time = 900
+  wb-snapshot:
+    description: 'Enable WarpBuild snapshot creation (opt-in)'
+    required: false
+    default: 'false'
 
 runs:
   using: 'composite'
@@ -30,9 +34,6 @@ runs:
       with:
         diagnostic-endpoint: ""
         extra-conf: ${{ inputs.nix-extra-conf }}
-
-    - name: Setup FlakeHub Cache
-      uses: DeterminateSystems/flakehub-cache-action@v2
 
     - name: Install Devenv
       shell: bash
@@ -56,6 +57,28 @@ runs:
           echo "Installing unfree profile: $profile"
           NIXPKGS_ALLOW_UNFREE=1 nix profile add "$profile" --impure
         done
+
+    - name: Compute WarpBuild Snapshot Alias
+      if: ${{ inputs.wb-snapshot == 'true' }}
+      id: wb-alias
+      shell: bash
+      run: |
+        WORKFLOW_FILE=$(basename "${{ github.workflow_ref }}" | sed 's/@.*//' | sed 's/\.ya\?ml$//')
+        INPUTS_HASH=$(echo -n "${{ inputs.additionalProfiles }}${{ inputs.additionalUnfreeProfiles }}${{ inputs.nix-extra-conf }}" | sha256sum | cut -c1-8)
+        ALIAS="${{ github.repository }}-${WORKFLOW_FILE}-${{ github.ref_name }}-${INPUTS_HASH}"
+        ALIAS=$(echo "$ALIAS" | tr '/' '-' | tr ' ' '-' | tr '_' '-')
+        echo "Creating WarpBuild snapshot with alias: $ALIAS"
+        echo "alias=$ALIAS" >> $GITHUB_OUTPUT
+
+    - name: Create WarpBuild Snapshot
+      if: ${{ inputs.wb-snapshot == 'true' }}
+      uses: WarpBuilds/snapshot-save@v1
+      with:
+        alias: ${{ steps.wb-alias.outputs.alias }}
+        fail-on-error: true
+
+    - name: Setup FlakeHub Cache
+      uses: DeterminateSystems/flakehub-cache-action@v2
 
 branding:
   icon: 'package'

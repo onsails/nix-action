@@ -90,6 +90,7 @@ The snapshot is created **after** all Nix profiles are installed but **before** 
 | `nix-extra-conf` | Additional Nix configuration options | No | See default config below |
 | `wb-snapshot` | Enable WarpBuild snapshot creation (opt-in, requires WarpBuild runner) | No | `'false'` |
 | `impatient-networking` | Enable aggressive timeout and retry settings for faster CI (opt-out, enabled by default) | No | `'true'` |
+| `use-gha-cache` | Enable GitHub Actions cache for FlakeHub Cache (opt-in) | No | `'false'` |
 
 ### Default Nix Configuration
 

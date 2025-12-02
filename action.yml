@@ -29,6 +29,10 @@ inputs:
     description: 'Enable aggressive timeout and retry settings for faster CI (opt-out, enabled by default)'
     required: false
     default: 'true'
+  use-gha-cache:
+    description: 'Enable GitHub Actions cache for FlakeHub Cache'
+    required: false
+    default: 'false'
 
 runs:
   using: 'composite'
@@ -105,6 +109,8 @@ runs:
 
     - name: Setup FlakeHub Cache
       uses: DeterminateSystems/flakehub-cache-action@v2
+      with:
+        use-gha-cache: ${{ inputs.use-gha-cache }}
 
 branding:
   icon: 'package'

@@ -108,7 +108,7 @@ runs:
         fail-on-error: true
 
     - name: Setup FlakeHub Cache
-      uses: DeterminateSystems/flakehub-cache-action@v2
+      uses: DeterminateSystems/flakehub-cache-action@v3
       with:
         use-gha-cache: ${{ inputs.use-gha-cache }}
 

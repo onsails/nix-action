@@ -58,7 +58,7 @@ runs:
         EOF
 
     - name: Install Nix
-      uses: DeterminateSystems/determinate-nix-action@v3
+      uses: DeterminateSystems/determinate-nix-action@v3.21.8
       with:
         diagnostic-endpoint: ""
         extra-conf: |
